@@ -6,17 +6,16 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Queue;
-import java.util.Set;
+import java.util.*;
 
- class WikipediaCrawling {
+class WikipediaCrawling {
 
-     ///  final means this varriable can not change
+    ///  final means this varriable can not change
     private static final int MAX_NUMBER_PAGES = 10;
     private Set<String> visitedLinks = new HashSet<>();
     private Queue<String> urlsToCrawling = new LinkedList<>();
+    private List<String> allTokens = new ArrayList<>();
+
 
     public void crawl(String startUrl) {
 
@@ -45,6 +44,11 @@ import java.util.Set;
 
                 visitedLinks.add(currentUrl);
 
+                String text = doc.select("#mw-content-text").text();
+
+
+                List<String> tokens = List.of(tokenization(text));
+                allTokens.addAll(tokens);
 
 
                 ///list all links in pages
@@ -66,7 +70,37 @@ import java.util.Set;
             } catch (IOException | InterruptedException e) {
                 System.err.println("Error: " + e.getMessage());
             }
+            //printing all tokens
+            System.out.println("\n\n********************************************************* All tokens collected:");
+            for (String token : allTokens) {
+                System.out.println(token);
+            }
         }
+    }
+
+    private String[] tokenization(String text){
+        if (text == null) {
+            return new String[0];
+        }
+        String[] rawTokens =  text.toLowerCase().split("\\W+");
+
+        List<String>cleanedTokens = new ArrayList<>();
+        for (String token : rawTokens){
+            if (!token.isEmpty() && token.length() > 1 && token.matches("[a-z]+") && !ISStopWord(token)){
+                cleanedTokens.add(token);
+            }
+        }
+        return cleanedTokens.toArray(new String[0]);
+    }
+
+    private Boolean ISStopWord(String word){
+        String[] stopWords = {"the", "is", "at", "which", "on", "and", "a", "an", "of", "in", "to", "for"};
+        for (String stopWord : stopWords){
+            if (stopWord.equals(word)){
+                return true;
+            }
+        }
+        return false;
     }
 
     public static void main(String[] args) {
