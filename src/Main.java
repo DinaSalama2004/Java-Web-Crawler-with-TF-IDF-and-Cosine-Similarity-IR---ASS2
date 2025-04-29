@@ -15,8 +15,9 @@ class WikipediaCrawling {
     private Queue<String> urlsToCrawl = new LinkedList<>();
     private List<String> allTokens = new ArrayList<>();
 
-    private Map<Integer, String> docIdToUrl = new HashMap<>();
-    private Map<String, Map<Integer, Integer>> invertedIndex = new HashMap<>();
+    private Map<String, Map<Integer, Integer>> invertedIndex = new LinkedHashMap<>();
+    private Map<Integer, String> docIdToUrl = new LinkedHashMap<>();  // make sure this is imported
+
     private int docIdCounter = 1;
 
     public void crawl(String startUrl) {
@@ -252,6 +253,7 @@ class WikipediaCrawling {
                 crawler.invertedIndex, crawler.docIdToUrl.size());
 
         // print document TF-IDF
+<<<<<<< HEAD
 //        System.out.println("\n======= Document Vectors (TF-IDF) =======\n");
 //        for (Map.Entry<Integer, Map<String, Double>> entry : docVectors.entrySet()) {
 //            int docId = entry.getKey();     // the docId from the posting list
@@ -260,6 +262,16 @@ class WikipediaCrawling {
 //                System.out.printf("\tTerm: %-15s TF-IDF: %.5f%n", res.getKey(), res.getValue());
 //            }
 //        }
+=======
+        System.out.println("\n======= Document Vectors (TF-IDF) =======\n");
+        for (Map.Entry<Integer, Map<String, Double>> entry : docVectors.entrySet()) {
+            int docId = entry.getKey();     // the docId from the posting list
+            System.out.println("DocID: " + docId + " - URL: " + crawler.docIdToUrl.get(docId));
+            for (Map.Entry<String, Double> res : entry.getValue().entrySet()) {     // (term, TF-IDF)
+                System.out.printf("\tTerm: %-40s TF-IDF: %.5f%n", res.getKey(), res.getValue());
+            }
+        }
+>>>>>>> 6363e2ae9dc9033f45bd45d63c7800e507b8a906
 
         // Process the user query
         Map<String, Double> queryVector = crawler.processUserQuery(crawler.invertedIndex, crawler.docIdToUrl.size());
