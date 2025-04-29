@@ -7,6 +7,32 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.*;
 
+
+// ***in the index file***
+    public void computeTFIDF() {
+        for (Map.Entry<String, DictEntry> entry : index.entrySet()) {
+            String term = entry.getKey();
+            DictEntry dictEntry = entry.getValue();
+            // IDF Calculation
+            double idf = Math.log10((double) N / dictEntry.doc_freq);
+
+            Posting posting = dictEntry.pList;
+            while (posting != null) {
+                int tf = posting.dtf;
+
+                // TF weight calculation
+                double tf_weight = 1 + Math.log10(tf);
+
+                // TF-IDF calculation
+                double tfidf = tf_weight * idf;
+
+                System.out.println("Term: " + term + ", DocID: " + posting.docId + ", TF-IDF: " + tfidf);
+
+                posting = posting.next;
+            }
+        }
+    }
+
 class WikipediaCrawling {
 
     private static final int MAX_NUMBER_PAGES = 10;
@@ -116,7 +142,16 @@ class WikipediaCrawling {
         crawler.crawl("https://en.wikipedia.org/wiki/List_of_pharaohs");
         crawler.crawl("https://en.wikipedia.org/wiki/Pharaoh");
 
-//        crawler.printDocumentMapping();
+        // crawler.printDocumentMapping();
         crawler.printInvertedIndex();
+        
+        // TF-IDF Part
+        Index5 index = new Index5();
+        String[] files = {"file1.txt", "file2.txt", "file3.txt"};
+
+        index.buildIndex(files);
+        index.setN(files.length);
+
+        index.computeTFIDF();
     }
 }
