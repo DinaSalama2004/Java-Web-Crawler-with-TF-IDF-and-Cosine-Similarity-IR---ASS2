@@ -253,7 +253,7 @@ class WikipediaCrawling {
                 crawler.invertedIndex, crawler.docIdToUrl.size());
 
         // print document TF-IDF
-<<<<<<< HEAD
+
 //        System.out.println("\n======= Document Vectors (TF-IDF) =======\n");
 //        for (Map.Entry<Integer, Map<String, Double>> entry : docVectors.entrySet()) {
 //            int docId = entry.getKey();     // the docId from the posting list
@@ -262,7 +262,7 @@ class WikipediaCrawling {
 //                System.out.printf("\tTerm: %-15s TF-IDF: %.5f%n", res.getKey(), res.getValue());
 //            }
 //        }
-=======
+
         System.out.println("\n======= Document Vectors (TF-IDF) =======\n");
         for (Map.Entry<Integer, Map<String, Double>> entry : docVectors.entrySet()) {
             int docId = entry.getKey();     // the docId from the posting list
@@ -271,7 +271,7 @@ class WikipediaCrawling {
                 System.out.printf("\tTerm: %-40s TF-IDF: %.5f%n", res.getKey(), res.getValue());
             }
         }
->>>>>>> 6363e2ae9dc9033f45bd45d63c7800e507b8a906
+
 
         // Process the user query
         Map<String, Double> queryVector = crawler.processUserQuery(crawler.invertedIndex, crawler.docIdToUrl.size());
