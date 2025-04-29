@@ -154,4 +154,62 @@ class WikipediaCrawling {
 
         index.computeTFIDF();
     }
+    // Method to process the user query: tokenize it, clean it, and build a TF-IDF weighted vector
+public Map<String, Double> processUserQuery(Map<String, Map<Integer, Integer>> invertedIndex, int totalDocuments) {
+    
+    //Take query input from user
+    Scanner scanner = new Scanner(System.in);
+    System.out.println("Enter your search query:");
+    String userInput = scanner.nextLine();
+
+    //Tokenize and clean the input query same as in the documents
+    // - Convert to lowercase
+    // - Split based on non-word characters
+    String[] queryTokens = userInput.toLowerCase().split("\\W+");
+
+    // Prepare a list to hold cleaned tokens
+    List<String> cleanedTokens = new ArrayList<>();
+    for (String token : queryTokens) {
+        // Keep only alphabetic tokens, at least 2 characters, not a stopword
+        if (!token.isEmpty() && token.length() > 1 && token.matches("[a-z]+") && !isStopWord(token)) {
+            cleanedTokens.add(token);
+        }
+    }
+
+    //Build the term frequency (TF) map for the query
+    // - Count how many times each token appears inside the query
+    Map<String, Integer> queryTF = new HashMap<>();
+    for (String token : cleanedTokens) {
+        queryTF.merge(token, 1, Integer::sum);
+    }
+
+    //Build the TF-IDF weighted vector for the query
+    // - TF-IDF = (1 + log10(tf)) × log10(N / df)
+    Map<String, Double> queryVector = new HashMap<>();
+
+    for (Map.Entry<String, Integer> entry : queryTF.entrySet()) {
+        String token = entry.getKey();
+        int tf = entry.getValue();
+
+        // Calculate TF weight
+        double tfWeight = 1 + Math.log10(tf);
+
+        // Get the document frequency (df) of the token from the inverted index
+        int df = 0;
+        if (invertedIndex.containsKey(token)) {
+            df = invertedIndex.get(token).size(); // Number of documents containing this token
+        }
+
+        // Only calculate IDF if the token appears in at least one document
+        if (df > 0) {
+            double idf = Math.log10((double) totalDocuments / df); // Inverse Document Frequency
+            double tfidf = tfWeight * idf; // Final TF-IDF value
+            queryVector.put(token, tfidf);
+        }
+    }
+
+    // Return the final query vector: token -> TF-IDF weight
+    return queryVector;
+}
+
 }
