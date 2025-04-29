@@ -7,32 +7,6 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.util.*;
 
-
-// ***in the index file***
-    public void computeTFIDF() {
-        for (Map.Entry<String, DictEntry> entry : index.entrySet()) {
-            String term = entry.getKey();
-            DictEntry dictEntry = entry.getValue();
-            // IDF Calculation
-            double idf = Math.log10((double) N / dictEntry.doc_freq);
-
-            Posting posting = dictEntry.pList;
-            while (posting != null) {
-                int tf = posting.dtf;
-
-                // TF weight calculation
-                double tf_weight = 1 + Math.log10(tf);
-
-                // TF-IDF calculation
-                double tfidf = tf_weight * idf;
-
-                System.out.println("Term: " + term + ", DocID: " + posting.docId + ", TF-IDF: " + tfidf);
-
-                posting = posting.next;
-            }
-        }
-    }
-
 class WikipediaCrawling {
 
     private static final int MAX_NUMBER_PAGES = 10;
@@ -136,6 +110,36 @@ class WikipediaCrawling {
         }
     }
 
+    // TF-IDF weighted
+    public Map<Integer, Map<String, Double>> buildDocumentVectors(Map<String, Map<Integer, Integer>> invertedIndex, int totalDocuments) {
+        Map<Integer, Map<String, Double>> docVectors = new HashMap<>();
+
+        for (String term : invertedIndex.keySet()) {    // iterate over all terms in the inverted index.
+            Map<Integer, Integer> postings = invertedIndex.get(term);   // postings get its values from the inverted index (docId, tf)
+            int df = postings.size();   // number of documents where the term appears in it
+            // IDF calculation
+            double idf = Math.log10((double) totalDocuments / df);
+
+            for (Map.Entry<Integer, Integer> el : postings.entrySet()) {
+                int docId = el.getKey();
+                int tf = el.getValue();     // get the term frequency from each term in the posting list
+                // TF weight calculation
+                double tfWeight = 1 + Math.log10(tf);
+                // TF-IDF calculation
+                double tfidf = tfWeight * idf;
+
+                // if the docId is not in the array then creat hash map and put the docId into it
+                // else (the docId exists) put the term and its TF-IDF in the array with the docId as the key
+                docVectors.computeIfAbsent(docId, k -> new HashMap<>()).put(term, tfidf);
+            }
+        }
+
+        return docVectors;
+        // output in format
+        // docId
+        // (term, TF-IDF)
+    }
+
 
     public static void main(String[] args) {
         WikipediaCrawling crawler = new WikipediaCrawling();
@@ -146,13 +150,19 @@ class WikipediaCrawling {
         crawler.printInvertedIndex();
         
         // TF-IDF Part
-        Index5 index = new Index5();
-        String[] files = {"file1.txt", "file2.txt", "file3.txt"};
+        Map<Integer, Map<String, Double>> docVectors = crawler.buildDocumentVectors(
+                crawler.invertedIndex, crawler.docIdToUrl.size());
 
-        index.buildIndex(files);
-        index.setN(files.length);
+        // print document TF-IDF
+        System.out.println("\n======= Document Vectors (TF-IDF) =======\n");
+        for (Map.Entry<Integer, Map<String, Double>> entry : docVectors.entrySet()) {
+            int docId = entry.getKey();     // the docId from the posting list
+            System.out.println("DocID: " + docId + " - URL: " + crawler.docIdToUrl.get(docId));
+            for (Map.Entry<String, Double> res : entry.getValue().entrySet()) {     // (term, TF-IDF)
+                System.out.printf("\tTerm: %-15s TF-IDF: %.5f%n", res.getKey(), res.getValue());
+            }
+        }
 
-        index.computeTFIDF();
     }
     // Method to process the user query: tokenize it, clean it, and build a TF-IDF weighted vector
 public Map<String, Double> processUserQuery(Map<String, Map<Integer, Integer>> invertedIndex, int totalDocuments) {
